@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">News</string>
     <string name="hint_title">Title</string>
     <string name="hint_description">Description</string>
     <string name="hint_author">Author</string>
