@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/newsHeadlineFragment">
+
+    <fragment
+        android:id="@+id/newsHeadlineFragment"
+        android:name="com.mayank_amr.news.ui.news.NewsHeadlineFragment"
+        android:label="news_headline_fragment"
+        tools:layout="@layout/news_headline_fragment" />
+</navigation>
