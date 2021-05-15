@@ -14,8 +14,8 @@ class NewsHeadlineRepository(
 ) {
     fun getHeadlinesResults(category: String) = Pager(
             config = PagingConfig(
-                    pageSize = 20,
-                    maxSize = 60,
+                    pageSize = 10,
+                    maxSize = 30,
                     enablePlaceholders = false
             ),
             pagingSourceFactory = { HeadlinePagingSource(api, category) }

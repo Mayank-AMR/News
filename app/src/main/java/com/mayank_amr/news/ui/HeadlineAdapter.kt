@@ -1,4 +1,4 @@
-package com.mayank_amr.news.ui.recyclerview
+package com.mayank_amr.news.ui
 
 import android.util.Log
 import android.view.LayoutInflater

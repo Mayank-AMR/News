@@ -6,4 +6,5 @@
     <string name="error_no_headlines_found">No headlines found for this query.</string>
     <string name="retry">Retry</string>
     <string name="error_result_could_not_be_loaded">Result could not be loaded</string>
+    <string name="contents_loading">Hang on, Contents loading..</string>
 </resources>
