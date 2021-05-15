@@ -15,7 +15,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:background="@color/purple_200"
             tools:listitem="@layout/headline_item" />
 
         <ProgressBar
