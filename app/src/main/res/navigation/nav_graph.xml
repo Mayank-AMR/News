@@ -7,7 +7,20 @@
 
     <fragment
         android:id="@+id/newsHeadlineFragment"
-        android:name="com.mayank_amr.news.ui.NewsHeadlineFragment"
-        android:label="news_headline_fragment"
-        tools:layout="@layout/news_headline_fragment" />
+        android:name="com.mayank_amr.news.ui.headlines.NewsHeadlineFragment"
+        android:label="News Headlines"
+        tools:layout="@layout/news_headline_fragment" >
+        <action
+            android:id="@+id/action_newsHeadlineFragment_to_headlineDetailFragment"
+            app:destination="@id/headlineDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/headlineDetailFragment"
+        android:name="com.mayank_amr.news.ui.headlinesdetail.HeadlineDetailFragment"
+        android:label="Detail"
+        tools:layout="@layout/headline_detail_fragment">
+        <argument
+            android:name="url"
+            app:argType="string" />
+    </fragment>
 </navigation>

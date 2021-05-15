@@ -1,4 +1,4 @@
-package com.mayank_amr.news.ui
+package com.mayank_amr.news.ui.headlines
 
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
@@ -19,7 +20,7 @@ import com.mayank_amr.news.util.visible
 import com.mayank_amr.news.viewmodel.NewsHeadlineViewModel
 import com.mayank_amr.news.viewmodel.NewsHeadlineViewModelFactory
 
-class NewsHeadlineFragment : Fragment() {
+class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickListener {
     private val TAG = "NewsHeadlineFragment"
 
     private var _binding: NewsHeadlineFragmentBinding? = null
@@ -27,8 +28,8 @@ class NewsHeadlineFragment : Fragment() {
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.news_headline_fragment, container, false)
     }
@@ -40,7 +41,7 @@ class NewsHeadlineFragment : Fragment() {
 
         _binding = DataBindingUtil.bind(view)
 
-        val adapter = HeadlineAdapter()
+        val adapter = HeadlineAdapter(this)
 
 
         // Manually Injected classes instance
@@ -108,6 +109,11 @@ class NewsHeadlineFragment : Fragment() {
             }
         }
         setHasOptionsMenu(true)
+    }
+
+    override fun onHeadlineItemClick(url: String) {
+        val action = NewsHeadlineFragmentDirections.actionNewsHeadlineFragmentToHeadlineDetailFragment(url)
+        findNavController().navigate(action)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

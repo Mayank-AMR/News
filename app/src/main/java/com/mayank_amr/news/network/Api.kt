@@ -1,9 +1,7 @@
 package com.mayank_amr.news.network
 
 import com.mayank_amr.news.data.response.HeadlinesResponse
-import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
-import retrofit2.http.POST
 import retrofit2.http.Query
 
 /**

@@ -1,4 +1,4 @@
-package com.mayank_amr.news.ui
+package com.mayank_amr.news.ui.headlines
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
