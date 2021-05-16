@@ -1,5 +1,6 @@
 package com.mayank_amr.news.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mayank_amr.news.data.repository.NewsHeadlineRepository
@@ -14,9 +15,7 @@ class NewsHeadlineViewModelFactory(
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when {
-            modelClass.isAssignableFrom(NewsHeadlineViewModel::class.java) -> NewsHeadlineViewModel(
-                repository as NewsHeadlineRepository
-            ) as T
+            modelClass.isAssignableFrom(NewsHeadlineViewModel::class.java) -> NewsHeadlineViewModel(repository) as T
             else -> throw IllegalArgumentException("ViewModelClass Not Found")
         }
     }

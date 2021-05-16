@@ -36,6 +36,7 @@ class HeadlinePagingSource(
                 prevKey = if (position == HEADLINE_STARTING_PAGE_INDEX) null else position - 1,
                 nextKey = if (headlines.isEmpty()) null else position + 1
             )
+
         } catch (exception: IOException) {
             LoadResult.Error(exception)
         } catch (exception: HttpException) {

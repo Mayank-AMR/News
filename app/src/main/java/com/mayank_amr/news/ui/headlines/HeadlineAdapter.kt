@@ -35,6 +35,7 @@ class HeadlineAdapter(private val listener: OnHeadlineItemClickListener) :
         Log.d(TAG, "onBindViewHolder: ")
         val currentItem = getItem(position)
         if (currentItem != null) {
+
             holder.bind(currentItem)
         }
     }

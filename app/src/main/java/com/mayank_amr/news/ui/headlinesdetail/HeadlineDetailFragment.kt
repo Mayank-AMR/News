@@ -24,20 +24,19 @@ class HeadlineDetailFragment : Fragment(R.layout.headline_detail_fragment) {
 
         binding.apply {
 
-            // WebViewClient allows you to handle
-            // onPageFinished and override Url loading.
             webView.webViewClient = WebViewClient()
 
-            // this will load the url of the website
+            // load the url of the website
             webView.loadUrl(args.url)
 
-            // this will enable the javascript settings
+            // enable the javascript settings
             webView.settings.javaScriptEnabled = true
 
-            // to enable zoom feature
+            // enable zoom feature
             webView.settings.setSupportZoom(true)
 
         }
     }
+    
 
 }
