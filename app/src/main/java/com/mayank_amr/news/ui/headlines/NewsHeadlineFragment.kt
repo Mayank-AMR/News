@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.google.android.material.chip.Chip
 import com.mayank_amr.news.R
@@ -24,6 +25,7 @@ import com.mayank_amr.news.network.RemoteDataSource
 import com.mayank_amr.news.util.visible
 import com.mayank_amr.news.viewmodel.NewsHeadlineViewModel
 import com.mayank_amr.news.viewmodel.NewsHeadlineViewModelFactory
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -33,6 +35,8 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
     private var _binding: NewsHeadlineFragmentBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var viewModel: NewsHeadlineViewModel
 
 
     override fun onCreateView(
@@ -50,118 +54,75 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
         _binding = DataBindingUtil.bind(view)
 
-        val adapter = HeadlineAdapter(this)
-
 
         // Manually Injected classes instance
         val dataSource = RemoteDataSource()
         val api = dataSource.buildApi(Api::class.java)
         val repository = NewsHeadlineRepository(api, provideDatabase(requireActivity().application))
-        //val stste: SavedStateHandle()
         val factory = NewsHeadlineViewModelFactory(repository)
-        val viewModel = ViewModelProvider(this, factory).get(NewsHeadlineViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(NewsHeadlineViewModel::class.java)
+
+        val adapter = HeadlineAdapter(this, onFavouriteClick = { article ->
+            viewModel.onFavouriteClick(article)
+        })
 
 
-
+        // Loading articles(Headlines) from database
         lifecycleScope.launch {
-            // Load from DB
-            viewModel.loadArticleFromDB().distinctUntilChanged().collectLatest {
+            viewModel.articleResultFromDB.distinctUntilChanged().collectLatest {
                 adapter.submitData(it)
             }
-
-            // Load from network as liveData
-//            viewModel.fetchArticleLiveData().observe(viewLifecycleOwner){
-//                adapter.submitData(viewLifecycleOwner.lifecycle, it)
-//            }
         }
 
-            // Load from network as Flow
-//        viewModel.fetchArticle().distinctUntilChanged().collectLatest {
-//            adapter.submitData(it)
-//        }
+        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
-//        val articleAdapter = ArticleAdapter(
-//                onItemClick = { article ->
-//                    val uri = Uri.parse(article.url)
-//                    val intent = Intent(Intent.ACTION_VIEW, uri)
-//                    requireActivity().startActivity(intent)
-//                },
-//                onFavouriteClick = { article ->
-//                    viewModel.onFavouriteClick(article)
-//                }
-//        )
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is NewsHeadlineViewModel.Event.ShowErrorMessage ->
+                        Log.e(TAG, "onViewCreated: Could not fetch Data.")
+                }
+            }
+        }
 
-//        articleAdapter.stateRestorationPolicy =
-//                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        // Refresh when recyclerview swipe down
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            adapter.retry()
+        }
 
-//        binding.apply {
-//            recyclerView.apply {
-//                adapter = articleAdapter
-//                layoutManager = LinearLayoutManager(requireContext())
-//                setHasFixedSize(true)
-//                itemAnimator?.changeDuration = 0
-//
-//            }
-//
-//            swipeRefreshLayout.setOnRefreshListener {
-//                viewModel.onManualRefresh()
-//            }
-//
-//            headlineFragmentButtonRetry.setOnClickListener {
-//                viewModel.onManualRefresh()
-//            }
-//
-//            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-//                viewModel.events.collect { event ->
-////                    when (event) {
-////                        is NewsHeadlineViewModel.Event.ShowErrorMessage ->
-////                            showSnackbar(
-////                                getString(
-////                                    R.string.could_not_refresh,
-////                                    event.error.localizedMessage
-////                                        ?: getString(R.string.unknown_error_occurred)
-////                                )
-////                            )
-////                    }.exhaustive
-//                }
-//            }
-//        }
-
-//        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-//            viewModel.articles.collect {
-//                val result = it ?: return@collect
-//
-//                binding.swipeRefreshLayout.isRefreshing = result is Resource.Loading
-//                binding.recyclerView.isVisible = !result.data.isNullOrEmpty()
-//                binding.headlineFragmentErrorResultNotLoadedTv.isVisible =
-//                        result.error != null && result.data.isNullOrEmpty()
-//                binding.headlineFragmentButtonRetry.isVisible =
-//                        result.error != null && result.data.isNullOrEmpty()
-//
-//
-//                articleAdapter.submitList(result.data) {
-//                    if (viewModel.pendingScrollToTopAfterRefresh) {
-//                        binding.recyclerView.scrollToPosition(0)
-//                        viewModel.pendingScrollToTopAfterRefresh = false
-//                    }
-//                }
-//            }
-//        }
-
+        binding.headlineFragmentButtonRetry.setOnClickListener {
+            adapter.retry()
+        }
 
         adapter.addLoadStateListener { loadState ->
+
+            //Log.d(TAG, "onViewCreated: loadState " + loadState)
+            /**
+             * CombinedLoadStates(
+             * source=LoadStates(refresh=NotLoading(endOfPaginationReached=false), prepend=NotLoading(endOfPaginationReached=false), append=NotLoading(endOfPaginationReached=false)),
+             * mediator=LoadStates(refresh=Loading(endOfPaginationReached=false), prepend=NotLoading(endOfPaginationReached=false), append=NotLoading(endOfPaginationReached=false))
+             * )
+             *
+             *  is the loading response of paging library.
+             *  Manage the UI according to the "mediator" that is responsible for network call.
+             *  Ex:- loadState.mediator!!.refresh is LoadState.Error -- Error loading data from network
+             **/
+
+
             binding.apply {
-                headlineFragmentProgressbar.isVisible =
-                    loadState.source.refresh is LoadState.Loading
+
+                swipeRefreshLayout.isRefreshing = loadState.source.refresh is LoadState.Loading
+
+                binding.headlineFragmentProgressbar.isVisible = loadState.mediator!!.refresh is LoadState.Loading
                 recyclerView.isVisible = loadState.source.refresh is LoadState.NotLoading
-                headlineFragmentButtonRetry.isVisible = loadState.source.refresh is LoadState.Error
-                headlineFragmentErrorResultNotLoadedTv.isVisible =
-                    loadState.source.refresh is LoadState.Error
+
+                headlineFragmentButtonRetry.isVisible = loadState.mediator!!.refresh is LoadState.Error
+                headlineFragmentErrorResultNotLoadedTv.isVisible = loadState.mediator!!.refresh is LoadState.Error
 
                 // for empty view
                 if (loadState.source.refresh is LoadState.NotLoading &&
-                    loadState.append.endOfPaginationReached &&
-                    adapter.itemCount < 1
+                        loadState.append.endOfPaginationReached &&
+                        adapter.itemCount < 1
                 ) {
                     recyclerView.visible(false)
                     headlineFragmentResultNoResultFoundTv.visible(true)
@@ -175,11 +136,13 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
         binding.apply {
 
+
             recyclerView.setHasFixedSize(true)
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.itemAnimator?.changeDuration = 0
             recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
-                header = HeadlinesLoadStateAdapter { adapter.refresh() },
-                footer = HeadlinesLoadStateAdapter { adapter.retry() }
+                    header = HeadlinesLoadStateAdapter { adapter.refresh() },
+                    footer = HeadlinesLoadStateAdapter { adapter.retry() }
             )
 
             headlineFragmentButtonRetry.setOnClickListener {
@@ -199,13 +162,14 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
                     previousSelection = id
                     val selectedChipText = chipGroup.findViewById<Chip>(chipGroup.checkedChipId).text.toString()
                     recyclerView.scrollToPosition(0)
-                    viewModel.searchHeadlines(selectedChipText)
+                    viewModel.searchArticle(selectedChipText)
                 }
             }
         }
         setHasOptionsMenu(true)
     }
 
+    //
     override fun onHeadlineItemClick(url: String) {
         val action = NewsHeadlineFragmentDirections.actionNewsHeadlineFragmentToHeadlineDetailFragment(url)
         findNavController().navigate(action)
@@ -219,6 +183,7 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return super.onOptionsItemSelected(item)
+
 
     }
 

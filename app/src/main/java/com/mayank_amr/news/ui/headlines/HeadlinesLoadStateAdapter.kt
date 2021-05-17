@@ -44,7 +44,6 @@ class HeadlinesLoadStateAdapter(private val retry: () -> Unit) :
                 progressBarHeadlinesFooter.visible(loadState is LoadState.Loading)
                 buttonRetryHeadlinesFooter.visible(loadState !is LoadState.Loading)
                 textViewErrorHeadlinesFooter.visible(loadState !is LoadState.Loading)
-
             }
         }
     }

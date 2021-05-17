@@ -13,10 +13,14 @@ import com.mayank_amr.news.data.response.HeadlinesResponse
  * @Created_by Mayank Kumar on 16-05-2021 10:38 AM
  */
 
+/**
+ * This abstract class contain all information of Database
+ */
+
 @Database(entities = [HeadlinesResponse.Article::class,RemoteKeys::class], version = 1)
 abstract class ArticleDatabase : RoomDatabase() {
 
-    abstract fun getRepoDao(): RemoteKeysDao
+    abstract fun getRemoteKeyDao(): RemoteKeysDao
     abstract fun articleDao(): ArticleDao
 
     companion object {

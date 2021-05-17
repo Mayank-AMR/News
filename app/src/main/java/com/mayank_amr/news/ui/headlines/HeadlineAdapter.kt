@@ -1,9 +1,8 @@
 package com.mayank_amr.news.ui.headlines
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -17,33 +16,34 @@ import com.mayank_amr.news.databinding.HeadlineItemBinding
  * @Project News
  * @Created_by Mayank Kumar on 14-05-2021 01:42 PM
  */
-class HeadlineAdapter(private val listener: OnHeadlineItemClickListener) :
+class HeadlineAdapter(private val listener: OnHeadlineItemClickListener,
+                      private val onFavouriteClick: (HeadlinesResponse.Article) -> Unit) :
         PagingDataAdapter<HeadlinesResponse.Article, HeadlineAdapter.HeadlineViewHolder>(
                 HEADLINE_COMPARATOR
         ) {
-    private val TAG = "HeadlineAdapter"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlineViewHolder {
-        Log.d(TAG, "onCreateViewHolder: ")
         val binding =
                 HeadlineItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return HeadlineViewHolder(binding)
+        return HeadlineViewHolder(binding, onFavouriteClick = { position ->
+            val article = getItem(position)
+            if (article != null) {
+                onFavouriteClick(article)
+            }
+        })
     }
 
 
     override fun onBindViewHolder(holder: HeadlineViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: ")
         val currentItem = getItem(position)
         if (currentItem != null) {
-
             holder.bind(currentItem)
         }
     }
 
 
-    inner class HeadlineViewHolder(private val binding: HeadlineItemBinding) :
+    inner class HeadlineViewHolder(private val binding: HeadlineItemBinding, private val onFavouriteClick: (Int) -> Unit) :
             RecyclerView.ViewHolder(binding.root) {
-        private val TAG = "HeadlineAdapter"
 
         init {
             binding.root.setOnClickListener {
@@ -58,13 +58,18 @@ class HeadlineAdapter(private val listener: OnHeadlineItemClickListener) :
                     }
                 }
             }
+            binding.makeFavouriteIv.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onFavouriteClick(position)
+                }
+            }
         }
 
         fun bind(headline: HeadlinesResponse.Article) {
             binding.headline = headline
 
             binding.apply {
-                Log.d(TAG, "bind: ")
                 if (headline.urlToImage != null) {
                     Glide.with(itemView)
                             .load(headline.urlToImage)
@@ -73,6 +78,10 @@ class HeadlineAdapter(private val listener: OnHeadlineItemClickListener) :
                             .error(R.drawable.ic_filter)
                             .into(newsImageIv)
                 }
+
+                when (headline.isFavourite) {
+                    true -> makeFavouriteIv.setColorFilter(ContextCompat.getColor(itemView.context, R.color.red))
+                }
             }
         }
     }
@@ -80,7 +89,6 @@ class HeadlineAdapter(private val listener: OnHeadlineItemClickListener) :
     interface OnHeadlineItemClickListener {
         fun onHeadlineItemClick(url: String)
     }
-
 
     companion object {
         private val HEADLINE_COMPARATOR =

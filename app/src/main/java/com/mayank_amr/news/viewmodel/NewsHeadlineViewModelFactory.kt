@@ -1,6 +1,5 @@
 package com.mayank_amr.news.viewmodel
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mayank_amr.news.data.repository.NewsHeadlineRepository

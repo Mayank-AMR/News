@@ -19,6 +19,7 @@ data class HeadlinesResponse(
         val url: String?,
         val urlToImage: String?,
         val isFavourite: Boolean,
+        var category: String,
         val updatedAt: Long = System.currentTimeMillis()
     ) {
         data class Source(
