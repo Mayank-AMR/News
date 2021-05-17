@@ -96,7 +96,7 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
         adapter.addLoadStateListener { loadState ->
 
-            //Log.d(TAG, "onViewCreated: loadState " + loadState)
+            Log.d(TAG, "onViewCreated: loadState " + loadState)
             /**
              * CombinedLoadStates(
              * source=LoadStates(refresh=NotLoading(endOfPaginationReached=false), prepend=NotLoading(endOfPaginationReached=false), append=NotLoading(endOfPaginationReached=false)),
@@ -113,24 +113,35 @@ class NewsHeadlineFragment : Fragment(), HeadlineAdapter.OnHeadlineItemClickList
 
                 swipeRefreshLayout.isRefreshing = loadState.source.refresh is LoadState.Loading
 
-                binding.headlineFragmentProgressbar.isVisible = loadState.mediator!!.refresh is LoadState.Loading
+                //binding.headlineFragmentProgressbar.isVisible = loadState.mediator!!.refresh is LoadState.Loading
                 recyclerView.isVisible = loadState.source.refresh is LoadState.NotLoading
 
-                headlineFragmentButtonRetry.isVisible = loadState.mediator!!.refresh is LoadState.Error
+                //headlineFragmentButtonRetry.isVisible = loadState.mediator!!.refresh is LoadState.Error
                 headlineFragmentErrorResultNotLoadedTv.isVisible = loadState.mediator!!.refresh is LoadState.Error
 
+                if (loadState.mediator!!.refresh is LoadState.Loading || loadState.source.refresh is LoadState.Loading) {
+                    binding.headlineFragmentProgressbar.visible(true)
+                }else{
+                    binding.headlineFragmentProgressbar.visible(false)
+                }
+
+                if (loadState.mediator!!.refresh is LoadState.Error &&  adapter.itemCount < 1) {
+                    // No offline data nad no network.
+                    headlineFragmentButtonRetry.visible(true)
+                    headlineFragmentErrorResultNotLoadedTv.visible(true)
+                }else{
+                    headlineFragmentButtonRetry.visible(false)
+                    headlineFragmentErrorResultNotLoadedTv.visible(false)
+                }
+
                 // for empty view
-                if (loadState.source.refresh is LoadState.NotLoading &&
-                        loadState.append.endOfPaginationReached &&
-                        adapter.itemCount < 1
-                ) {
+                if (loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached && adapter.itemCount < 1) {
                     recyclerView.visible(false)
                     headlineFragmentResultNoResultFoundTv.visible(true)
                 } else {
                     headlineFragmentResultNoResultFoundTv.visible(false)
                     // headlineFragmentProgressbar.visible(false)
                 }
-
             }
         }
 
