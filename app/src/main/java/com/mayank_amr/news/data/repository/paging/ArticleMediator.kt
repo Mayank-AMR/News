@@ -135,7 +135,7 @@ class ArticleMediator(val api: Api, val db: ArticleDatabase, val category: Strin
     }
 
     companion object {
-        public const val API_KEY = "25b1aa9a016b4fb49dac78474501bbf5"//"7be9224ddeaa419e9d9cbffd5de2cf49"
+        public const val API_KEY = "Your API_KEY goes here"
         public const val COUNTRY = "in"
     }
 
